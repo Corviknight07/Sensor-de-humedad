@@ -1,0 +1,85 @@
+// ----Librerías---- 
+#include <SPI.h> 
+#include <Adafruit_GFX.h> 
+#include <Adafruit_ILI9341.h> 
+#include <DHT.h> 
+
+// --- DHT22 --- 
+#define DHTPIN 4 
+#define DHTTYPE DHT22 
+DHT dht(DHTPIN, DHTTYPE); 
+
+// ---- YL-69 ---- 
+#define YL_PIN 34 
+
+// ---- PANTALLA TFT ---- 
+#define TFT_CS   5 
+#define TFT_DC   2 
+#define TFT_RST  15 
+Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST); 
+
+// ---VARIABLES --- 
+float temperature = 0.0 
+float humidity = 0.0 
+int soilRaw = 0; 
+
+// --- SETUP --- 
+void setup() { 
+Serial.begin(115200); 
+dht.begin() 
+tft.begin(); 
+tft.setRotation(1); 
+tft.fillScreen(ILI9341_BLACK); 
+tft.setTextColor(ILI9341_WHITE); 
+tft.setTextSize(2); 
+tft.setCursor(10, 10); 
+
+tft.println("Sistema de Sensores"); 
+ 
+  delay(1500); 
+} 
+ 
+// --- LOOP --- 
+void loop() { 
+ 
+  // ---Lectura de sensores--- 
+  humidity = dht.readHumidity(); 
+  temperature = dht.readTemperature(); 
+  soilRaw = analogRead(YL_PIN); 
+ 
+  // ---Verifica lectura válida---
+  if (isnan(humidity) || isnan(temperature)) { 
+    Serial.println("Error DHT22"); 
+    return; 
+  } 
+ 
+  // ---Actualiza pantalla--- 
+  tft.fillRect(0, 50, 320, 190, ILI9341_BLACK); 
+ 
+  tft.setCursor(10, 60); 
+  tft.print("Temperatura: "); 
+  tft.print(temperature, 1); 
+  tft.println(" C"); 
+ 
+  tft.setCursor(10, 90); 
+  tft.print("Humedad aire: "); 
+  tft.print(humidity, 1); 
+  tft.println(" %"); 
+ 
+  tft.setCursor(10, 120); 
+  tft.print("Humedad suelo:"); 
+ 
+  tft.setCursor(10, 150); 
+  tft.print("ADC = "); 
+  tft.print(soilRaw); 
+ 
+  // ---Muestra datos por serial--- 
+  Serial.print("Temp: "); 
+  Serial.print(temperature); 
+  Serial.print(" C | Hum: "); 
+  Serial.print(humidity); 
+  Serial.print(" % | Soil: "); 
+  Serial.println(soilRaw); 
+ 
+  delay(2000); 
+}
